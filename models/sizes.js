@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       sizes: {
         type: DataTypes.JSON,
       },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      }
     }, {
         tableName: 'Sizes',
         timestamps: false,

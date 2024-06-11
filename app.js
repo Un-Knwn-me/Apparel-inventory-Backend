@@ -10,6 +10,7 @@ const dbConnect = require("./config/dbConnection");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
+var brandsRouter = require("./routes/brands");
 
 dotenv.config();
 var app = express();
@@ -38,6 +39,7 @@ app.use(bodyParser.json());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/brands", brandsRouter);
 
 // Test db connection
 app.get('/test-db', (req, res) => {

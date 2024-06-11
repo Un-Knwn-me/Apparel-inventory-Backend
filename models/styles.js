@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       full_description: {
         type: DataTypes.TEXT,
       },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      }
     }, {
         tableName: 'Styles',
         timestamps: false,

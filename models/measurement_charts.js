@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
       sample_size_file: {
         type: DataTypes.STRING,
       },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      }
     }, {
         tableName: 'MeasurementCharts',
         timestamps: false,

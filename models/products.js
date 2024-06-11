@@ -150,11 +150,26 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     });
 
-    Product.associate = function(models) {
-      Product.belongsTo(models.Brand, {
-        foreignKey: 'brand_id',
-      });
-    };
+    // Product.associate = function(models) {
+    //   Product.belongsTo(models.Brand, { foreignKey: 'brand_id',as: 'brand' });
+    //   Product.belongsTo(models.Style, { foreignKey: 'style_id' });
+    //   Product.belongsTo(models.Fabric, { foreignKey: 'fabric_id' });
+    //   Product.belongsTo(models.FabricFinish, { foreignKey: 'fabric_finish_id' });
+    //   Product.belongsTo(models.Gsm, { foreignKey: 'gsm_id' });
+    //   Product.belongsTo(models.KnitType, { foreignKey: 'knit_type_id' });
+    //   Product.belongsTo(models.Color, { foreignKey: 'color_id' });
+    //   Product.belongsTo(models.Size, { foreignKey: 'size_id' });
+    //   Product.belongsTo(models.Decoration, { foreignKey: 'decoration_id' });
+    //   Product.belongsTo(models.PrintEmbName, { foreignKey: 'print_emb_id' });
+    //   Product.belongsTo(models.StitchDetail, { foreignKey: 'stitch_detail_id' });
+    //   Product.belongsTo(models.Neck, { foreignKey: 'neck_id' });
+    //   Product.belongsTo(models.Sleeve, { foreignKey: 'sleeve_id' });
+    //   Product.belongsTo(models.Length, { foreignKey: 'length_id' });
+    //   Product.belongsTo(models.PackingMethod, { foreignKey: 'packing_method_id' });
+    //   Product.belongsTo(models.InnerPcs, { foreignKey: 'inner_pcs_id' });
+    //   Product.belongsTo(models.OuterCartonPcs, { foreignKey: 'outer_carton_pcs_id' });
+    //   Product.belongsTo(models.MeasurementChart, { foreignKey: 'measurement_chart_id' });
+    // };
   
     return Product;
   };

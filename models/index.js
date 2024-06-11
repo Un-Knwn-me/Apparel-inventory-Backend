@@ -17,16 +17,16 @@ if (config.use_env_variable) {
 }
 
 fs.readdirSync(__dirname).filter(file => {
-    return (
-      file.indexOf('.') !== 0 &&
-      file !== basename &&
-      file.slice(-3) === '.js' &&
-      file.indexOf('.test.js') === -1
-    );
-  }).forEach(file => {
-    const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
-    db[model.name] = model;
-  });
+  return (
+    file.indexOf('.') !== 0 &&
+    file !== basename &&
+    file.slice(-3) === '.js' &&
+    file.indexOf('.test.js') === -1
+  );
+}).forEach(file => {
+  const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
+  db[model.name] = model;
+});
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
@@ -36,14 +36,5 @@ Object.keys(db).forEach(modelName => {
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
-
-// Synchronize the models with the database
-sequelize.sync({ alter: false })
-  .then(() => {
-    console.log('Database & tables created!');
-  })
-  .catch(error => {
-    console.error('Error synchronizing database:', error);
-  });
 
 module.exports = db;
