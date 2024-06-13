@@ -18,5 +18,9 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false,
     });
   
+    InnerPcs.associate = function(models) {
+      InnerPcs.hasMany(models.Product, { foreignKey: 'inner_pcs_id' });
+    };
+
     return InnerPcs;
   };  

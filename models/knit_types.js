@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'KnitTypes',
         timestamps: false,
     });
+
+    KnitType.associate = function(models) {
+      KnitType.hasMany(models.Product, { foreignKey: 'knit_type_id' });
+    };
   
     return KnitType;
   };

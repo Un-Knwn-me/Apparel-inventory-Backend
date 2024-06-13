@@ -18,5 +18,9 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: false,
     });
   
+    FabricFinish.associate = function(models) {
+      FabricFinish.hasMany(models.Product, { foreignKey: 'fabric_finish_id' });
+    };
+
     return FabricFinish;
   };  

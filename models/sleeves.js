@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'Sleeves',
         timestamps: false,
     });
+
+    Sleeve.associate = function(models) {
+      Sleeve.hasMany(models.Product, { foreignKey: 'sleeve_id' });
+    };
   
     return Sleeve;
   };  

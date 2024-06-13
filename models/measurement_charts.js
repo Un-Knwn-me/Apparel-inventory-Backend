@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'MeasurementCharts',
         timestamps: false,
     });
+
+    MeasurementChart.associate = function(models) {
+      MeasurementChart.hasMany(models.Product, { foreignKey: 'measurement_chart_id' });
+    };
   
     return MeasurementChart;
   };  

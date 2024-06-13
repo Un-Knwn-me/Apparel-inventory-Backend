@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'PrintEmbNames',
         timestamps: false,
     });
+
+    PrintEmbName.associate = function(models) {
+      PrintEmbName.hasMany(models.Product, { foreignKey: 'print_emb_id' });
+    };
   
     return PrintEmbName;
   };  

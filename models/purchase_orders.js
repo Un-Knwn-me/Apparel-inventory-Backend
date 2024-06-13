@@ -59,6 +59,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'PurchaseOrders',
         timestamps: false,
     });
+
+    PurchaseOrder.associate = function(models) {
+      PurchaseOrder.belongsTo(models.Product, { foreignKey: 'product_id' });
+  };
   
     return PurchaseOrder;
   };  

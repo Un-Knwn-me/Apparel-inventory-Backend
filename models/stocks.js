@@ -31,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
     }, {
       timestamps: false,
     });
+
+    Stock.associate = function(models) {
+      Stock.belongsTo(models.Product, { foreignKey: 'product_id' });
+  };
   
     return Stock;
   };  

@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'Lengths',
         timestamps: false,
     });
+
+    Length.associate = function(models) {
+      Length.hasMany(models.Product, { foreignKey: 'length_id' });
+    };
   
     return Length;
   };

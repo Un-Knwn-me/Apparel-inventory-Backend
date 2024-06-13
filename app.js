@@ -9,8 +9,29 @@ let bodyParser = require("body-parser");
 const dbConnect = require("./config/dbConnection");
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
-var brandsRouter = require("./routes/brands");
+let usersRouter = require("./routes/users");
+let brandsRouter = require("./routes/brands");
+let colorRouter = require("./routes/colors");
+let decorationRouter = require("./routes/decorations");
+let fabricFinishRouter = require("./routes/fabricFinishes");
+let fabricRouter = require("./routes/fabrics");
+let innerPcsRouter = require("./routes/innerPcs");;
+let gsmRouter = require("./routes/gsm");
+let knitTypeRouter = require("./routes/knitTypes");
+let lengthRouter = require("./routes/lengths");
+let measurementChartRouter = require("./routes/measurementChart");
+let neckRouter = require("./routes/necks");
+let outerCortonRouter = require("./routes/outerCortons");
+let packingMethodRouter = require("./routes/packingMethod");
+let printEmbRouter = require("./routes/printEmb");
+let sizeRouter = require("./routes/sizes");
+let sleeveRouter = require("./routes/sleeves");
+let stitchDetailRouter = require("./routes/stitchDetails");
+let styleRouter = require("./routes/style");
+let productRouter = require("./routes/products");
+let purchaseRouter = require("./routes/purchaseOrders");
+let stockRouter = require("./routes/stocks");
+let stockHistoryRouter = require("./routes/stockHistory");
 
 dotenv.config();
 var app = express();
@@ -40,17 +61,37 @@ app.use(bodyParser.json());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/brands", brandsRouter);
+app.use("/colors", colorRouter);
+app.use("/decorations", decorationRouter);
+app.use("/fabricFinishes", fabricFinishRouter);
+app.use("/fabrics", fabricRouter);
+app.use("/gsms", gsmRouter);
+app.use("/innerPcs", innerPcsRouter);
+app.use("/knitTypes", knitTypeRouter);
+app.use("/lengths", lengthRouter);
+app.use("/mesurementCharts", measurementChartRouter);
+app.use("/necks", neckRouter);
+app.use("/outerCortons", outerCortonRouter);
+app.use("/packingMethods", packingMethodRouter);
+app.use("/printEmb", printEmbRouter);
+app.use("/sizes", sizeRouter);
+app.use("/sleeves", sleeveRouter);
+app.use("/stitchDetails", stitchDetailRouter);
+app.use("/styles", styleRouter);
+app.use("/products", productRouter);
+app.use("/purchases", purchaseRouter);
+app.use("/stocks", stockRouter);
+app.use("/stockHisory", stockHistoryRouter);
 
 // Test db connection
-app.get('/test-db', (req, res) => {
-  dbConnect.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
-    if (error) {
-      res.status(500).send('Error querying the database');
-      return;
-    }
-    res.send(`The solution is: ${results[0].solution}`);
-  });
-});
+app.get('/test-db', async (req, res) => {
+  try {
+    await db.sequelize.authenticate();
+    res.send('Database connection has been established successfully.');
+  } catch (error) {
+    res.status(500).send('Unable to connect to the database:', error);
+  }
+}); 
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

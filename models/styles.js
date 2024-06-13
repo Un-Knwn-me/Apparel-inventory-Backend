@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         tableName: 'Styles',
         timestamps: false,
     });
+
+    Style.associate = function(models) {
+      Style.hasMany(models.Product, { foreignKey: 'style_id' });
+    };
   
     return Style;
   };

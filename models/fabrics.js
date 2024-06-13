@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'Fabrics',
       timestamps: false,
     });
+
+    Fabric.associate = function(models) {
+      Fabric.hasMany(models.Product, { foreignKey: 'fabric_id' });
+    };
   
     return Fabric;
   };
