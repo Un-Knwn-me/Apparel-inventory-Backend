@@ -32,6 +32,7 @@ let productRouter = require("./routes/products");
 let purchaseRouter = require("./routes/purchaseOrders");
 let stockRouter = require("./routes/stocks");
 let stockHistoryRouter = require("./routes/stockHistory");
+let stockOutRouter = require("./routes/stockOut");
 
 dotenv.config();
 var app = express();
@@ -81,7 +82,7 @@ app.use("/styles", styleRouter);
 app.use("/products", productRouter);
 app.use("/purchases", purchaseRouter);
 app.use("/stocks", stockRouter);
-app.use("/stockHisory", stockHistoryRouter);
+app.use("/stockOut", stockOutRouter);
 
 // Test db connection
 app.get('/test-db', async (req, res) => {

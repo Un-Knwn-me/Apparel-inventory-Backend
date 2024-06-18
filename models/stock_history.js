@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id',
         },
       },
+      total_stockOut_bundle: {
+        type: DataTypes.INTEGER,
+      },
       product_id: {
         type: DataTypes.INTEGER,
         references: {
@@ -40,10 +43,10 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     });
 
-    StockHistory.associate = function(models) {
-      StockHistory.belongsTo(models.Stock, { foreignKey: 'stock_id' });
-      StockHistory.belongsTo(models.Product, { foreignKey: 'product_id' });
-      StockHistory.belongsTo(models.PurchaseOrder, { foreignKey: 'purchase_order_id' });
+  StockHistory.associate = function(models) {
+    StockHistory.belongsTo(models.Stock, { foreignKey: 'stock_id' });
+    StockHistory.belongsTo(models.Product, { foreignKey: 'product_id' });
+    StockHistory.belongsTo(models.PurchaseOrder, { foreignKey: 'purchase_order_id' });
   };
   
     return StockHistory;

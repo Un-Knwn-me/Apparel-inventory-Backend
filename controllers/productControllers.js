@@ -133,7 +133,7 @@ exports.updateProductById = async (req, res) => {
   try {
     const productId = req.params.id;
     const updatedFields = req.body;
-
+    
     // Find the product by ID first
     const product = await Product.findByPk(productId);
 

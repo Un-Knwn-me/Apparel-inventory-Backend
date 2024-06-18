@@ -17,4 +17,7 @@ router.put('/:id', purchaseOrderController.updatePurchaseOrderById);
 // Delete purchase order by ID
 router.delete('/:id', purchaseOrderController.deletePurchaseOrderById);
 
+// Get the purchase order by order type
+router.get('/type/:order_type', purchaseOrderController.getPurchaseOrdersByType);
+
 module.exports = router;

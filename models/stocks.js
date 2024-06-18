@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       no_bundles: {
         type: DataTypes.INTEGER,
       },
+      total_inner_pcs: {
+        type: DataTypes.INTEGER,
+      },
       total_pcs_in_bundle: {
         type: DataTypes.INTEGER,
       },
