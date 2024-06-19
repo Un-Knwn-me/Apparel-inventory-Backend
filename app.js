@@ -31,7 +31,6 @@ let styleRouter = require("./routes/style");
 let productRouter = require("./routes/products");
 let purchaseRouter = require("./routes/purchaseOrders");
 let stockRouter = require("./routes/stocks");
-let stockHistoryRouter = require("./routes/stockHistory");
 let stockOutRouter = require("./routes/stockOut");
 
 dotenv.config();

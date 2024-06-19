@@ -38,6 +38,11 @@ exports.createStockEntry = async (req, res) => {
           product_id: product.id,
         });
       }
+
+      // Update the product with the stock ID and set is_stocked to true
+      product.stock_id = stock.id;
+      product.is_Stocked = true;
+      await product.save();
   
       // Create stock history entry
       const stockHistory = await StockHistory.create({
@@ -176,10 +181,17 @@ exports.deleteStockInById = async (req, res) => {
     try {
         // Find the stock by ID
         const stock = await Stock.findByPk(req.params.id);
+
         if (!stock) {
           return res.status(404).json({ error: 'Stock not found' });
         }
-    
+        
+        // Update related products to set stock_id to null and is_Stocked to false
+        await Product.update(
+          { stock_id: null, is_Stocked: false },
+          { where: { stock_id: stock.id } }
+        );
+
         // Delete all related stock history entries
         await StockHistory.destroy({ where: { stock_id: stock.id } });
     

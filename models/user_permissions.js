@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     department_id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       references: {
         model: 'Departments',
         key: 'id',
@@ -18,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     permission_id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       references: {
         model: 'Permissions',
         key: 'id',
@@ -34,6 +32,12 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'UserPermissions',
     timestamps: false,
   });
+
+  UserPermission.associate = function(models) {
+    UserPermission.belongsTo(models.User, { foreignKey: 'user_id' });
+    UserPermission.belongsTo(models.Permission, { foreignKey: 'permission_id' });
+    UserPermission.belongsTo(models.Department, { foreignKey: 'department_id' });
+};
 
   return UserPermission;
 };

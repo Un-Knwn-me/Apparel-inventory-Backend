@@ -139,6 +139,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      stock_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'Stocks',
+          key: 'id',
+        },
+      },
       images: {
         type: DataTypes.JSON,
       },
@@ -169,6 +176,7 @@ module.exports = (sequelize, DataTypes) => {
       Product.belongsTo(models.InnerPcs, { foreignKey: 'inner_pcs_id' });
       Product.belongsTo(models.OuterCartonPcs, { foreignKey: 'outer_carton_pcs_id' });
       Product.belongsTo(models.MeasurementChart, { foreignKey: 'measurement_chart_id' });
+      Product.belongsTo(models.Stock, { foreignKey:'stock_id' });
     };
   
     return Product;

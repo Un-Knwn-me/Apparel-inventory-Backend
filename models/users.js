@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
       },
       phone_number: {
-        type: DataTypes.INTEGER(10),
+        type: DataTypes.STRING(10),
         unique: true,
       },
       created_at: {
@@ -38,17 +38,8 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     User.associate = function(models) {
-      User.belongsToMany(models.Permission, {
-        through: 'UserPermissions',
-        foreignKey: 'user_id',
-        otherKey: 'permission_id',
-      });
-      User.belongsToMany(models.Department, {
-        through: 'UserPermissions',
-        foreignKey: 'user_id',
-        otherKey: 'department_id',
-      });
-    };
-  
+      User.hasMany(models.UserPermission, { foreignKey: 'user_id' });
+  };
+
     return User;
   };
