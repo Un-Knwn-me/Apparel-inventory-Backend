@@ -77,7 +77,7 @@ exports.getAllMeasurementCharts = async (req, res) => {
       });
   
       if (deleted) {
-        res.status(204).json();
+        res.status(202).json({ message: 'Measurement chart deleted successfully' });
       } else {
         res.status(404).json({ error: 'Measurement chart not found' });
       }

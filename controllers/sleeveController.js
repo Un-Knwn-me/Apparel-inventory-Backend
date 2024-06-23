@@ -58,7 +58,7 @@ exports.deleteSleeve = async (req, res) => {
     try {
         const deleted = await Sleeve.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Sleeve deleted successfully' });
         } else {
           res.status(404).json({ error: 'Sleeve not found' });
         }

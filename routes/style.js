@@ -6,7 +6,7 @@ const styleController = require('../controllers/styleController');
 router.post('/create', styleController.createStyle);
 
 // Get all styles
-router.get('/', styleController.getAllStyles);
+router.get('/getall', styleController.getAllStyles);
 
 // Get style by id
 router.get('/:id', styleController.getStyleById);

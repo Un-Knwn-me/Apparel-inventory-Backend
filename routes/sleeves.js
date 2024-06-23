@@ -6,7 +6,7 @@ const sleeveController = require('../controllers/sleeveController');
 router.post('/create', sleeveController.createSleeve);
 
 // Get all sleeves
-router.get('/', sleeveController.getAllSleeves);
+router.get('/getall', sleeveController.getAllSleeves);
 
 // Get sleeve by id
 router.get('/:id', sleeveController.getSleeveById);

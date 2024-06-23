@@ -6,7 +6,7 @@ const sizeController = require('../controllers/sizeController');
 router.post('/create', sizeController.createSize);
 
 // Get all sizes
-router.get('/', sizeController.getAllSizes);
+router.get('/getall', sizeController.getAllSizes);
 
 // Get size by id
 router.get('/:id', sizeController.getSizeById);

@@ -31,7 +31,7 @@ exports.getAllInnerPcs = async (req, res) => {
 exports.getInnerPcsById = async (req, res) => {
     try {
         const innerPcs = await InnerPcs.findByPk(req.params.id);
-        if (color) {
+        if (innerPcs) {
           res.status(200).json(innerPcs);
         } else {
           res.status(404).json({ error: 'Inner Pieces not found' });
@@ -59,7 +59,7 @@ exports.deleteInnerPcs = async (req, res) => {
     try {
         const deleted = await InnerPcs.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Inner Pieces deleted successfully' });
         } else {
           res.status(404).json({ error: 'Inner Pieces not found' });
         }

@@ -59,7 +59,7 @@ exports.deleteLengthType = async (req, res) => {
     try {
         const deleted = await Length.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Length type deleted successfully' });
         } else {
           res.status(404).json({ error: 'Length Type not found' });
         }

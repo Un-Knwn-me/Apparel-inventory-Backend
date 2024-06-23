@@ -58,7 +58,7 @@ exports.deleteStitchDetail = async (req, res) => {
     try {
         const deleted = await StitchDetail.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Stitch detail deleted successfully' });
         } else {
           res.status(404).json({ error: 'Stitch detail not found' });
         }

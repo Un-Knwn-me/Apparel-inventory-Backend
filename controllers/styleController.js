@@ -77,7 +77,7 @@ exports.deleteStyle = async (req, res) => {
     });
 
     if (deleted) {
-      res.status(204).json();
+      res.status(202).json({ message: 'Style deleted successfully' });
     } else {
       res.status(404).json({ error: 'Style not found' });
     }

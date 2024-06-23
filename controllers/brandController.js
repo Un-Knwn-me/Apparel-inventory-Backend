@@ -59,7 +59,7 @@ exports.deleteBrand = async (req, res) => {
     try {
         const deleted = await Brand.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Brand deleted successfully' });
         } else {
           res.status(404).json({ error: 'Brand not found' });
         }

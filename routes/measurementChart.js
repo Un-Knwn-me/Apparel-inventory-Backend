@@ -6,7 +6,7 @@ const measurementChartController = require('../controllers/measurementChartContr
 router.post('/create', measurementChartController.createMeasurementChart);
 
 // Get all measurement charts
-router.get('/', measurementChartController.getAllMeasurementCharts);
+router.get('/getall', measurementChartController.getAllMeasurementCharts);
 
 // Get measurement chart by id
 router.get('/:id', measurementChartController.getMeasurementChartById);

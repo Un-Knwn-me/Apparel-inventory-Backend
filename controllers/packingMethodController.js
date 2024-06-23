@@ -59,7 +59,7 @@ exports.deletePackingMethod = async (req, res) => {
     try {
         const deleted = await PackingMethod.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Packing method deleted successfully' });
         } else {
           res.status(404).json({ error: 'Packing Method not found' });
         }

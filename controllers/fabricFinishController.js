@@ -31,7 +31,7 @@ exports.getAllFabricFinishes = async (req, res) => {
 exports.getFabricFinishById = async (req, res) => {
     try {
         const fabricFinish = await FabricFinish.findByPk(req.params.id);
-        if (color) {
+        if (fabricFinish) {
           res.status(200).json(fabricFinish);
         } else {
           res.status(404).json({ error: 'Fabric Finish not found' });
@@ -59,7 +59,7 @@ exports.deleteFabricFinish = async (req, res) => {
     try {
         const deleted = await FabricFinish.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Fabric Finish not found' });
         } else {
           res.status(404).json({ error: 'Fabric Finish not found' });
         }

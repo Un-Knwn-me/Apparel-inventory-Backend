@@ -31,7 +31,7 @@ exports.getAllDecorations = async (req, res) => {
 exports.getDecorationById = async (req, res) => {
     try {
         const decoration = await Decoration.findByPk(req.params.id);
-        if (color) {
+        if (decoration) {
           res.status(200).json(decoration);
         } else {
           res.status(404).json({ error: 'Decoration not found' });
@@ -57,12 +57,12 @@ exports.updateDecoration = async (req, res) => {
 
 exports.deleteDecoration = async (req, res) => {
     try {
-        const deleted = await Decoration.destroy({ where: { id: req.params.id } });
-        if (deleted) {
-          res.status(204).json();
-        } else {
-          res.status(404).json({ error: 'Decoration not found' });
-        }
+      const deleted = await Decoration.destroy({ where: { id: req.params.id } });
+      if (deleted) {
+        res.status(202).json({ message: "Decoration deleted successfully" });
+      } else {
+        res.status(404).json({ error: "Decoration not found" });
+      }
       } catch (error) {
         res.status(500).json({ error: 'An error occurred while deleting the decoration' });
       }

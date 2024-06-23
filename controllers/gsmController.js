@@ -31,7 +31,7 @@ exports.getAllGsms = async (req, res) => {
 exports.getGsmById = async (req, res) => {
     try {
         const gsm = await Gsm.findByPk(req.params.id);
-        if (color) {
+        if (gsm) {
           res.status(200).json(gsm);
         } else {
           res.status(404).json({ error: 'Gsm not found' });
@@ -59,7 +59,7 @@ exports.deleteGsm = async (req, res) => {
     try {
         const deleted = await Gsm.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: "Gsm deleted successfully" });
         } else {
           res.status(404).json({ error: 'Gsm not found' });
         }

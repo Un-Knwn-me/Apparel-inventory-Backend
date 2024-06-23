@@ -59,7 +59,7 @@ exports.deleteNeckType = async (req, res) => {
     try {
         const deleted = await Neck.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Neck Type deleted successfully' });
         } else {
           res.status(404).json({ error: 'Neck Type not found' });
         }

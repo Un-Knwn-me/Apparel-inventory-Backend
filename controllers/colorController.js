@@ -69,7 +69,7 @@ exports.deleteColor = async (req, res) => {
   try {
     const deleted = await Color.destroy({ where: { id: req.params.id } });
     if (deleted) {
-      res.status(204).json();
+      res.status(202).json({ message: "Color deleted successfully" });
     } else {
       res.status(404).json({ error: "Color not found" });
     }

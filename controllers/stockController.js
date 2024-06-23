@@ -198,7 +198,7 @@ exports.deleteStockInById = async (req, res) => {
         // Delete the stock
         await stock.destroy();
     
-        res.status(200).json({ message: 'Stock deleted successfully' });
+        res.status(202).json({ message: 'Stock deleted successfully' });
       } catch (error) {
         console.error('Error deleting stock:', error);
         res.status(500).json({ error: 'An error occurred while deleting the stock' });

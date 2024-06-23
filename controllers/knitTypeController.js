@@ -59,7 +59,7 @@ exports.deleteKnitType = async (req, res) => {
     try {
         const deleted = await KnitType.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Knit type deleted successfully' });
         } else {
           res.status(404).json({ error: 'Knit Type not found' });
         }

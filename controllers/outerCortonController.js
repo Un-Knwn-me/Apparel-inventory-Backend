@@ -31,7 +31,7 @@ exports.getAllOuterCortonPcs = async (req, res) => {
 exports.getOuterCortonPcsById = async (req, res) => {
     try {
         const outerCorton = await OuterCartonPcs.findByPk(req.params.id);
-        if (color) {
+        if (outerCorton) {
           res.status(200).json(outerCorton);
         } else {
           res.status(404).json({ error: 'Outer Corton Pieces not found' });
@@ -59,7 +59,7 @@ exports.deleteOuterCortonPcs = async (req, res) => {
     try {
         const deleted = await OuterCartonPcs.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Outer Corton Pieces deleted successfully' });
         } else {
           res.status(404).json({ error: 'Outer Corton Pieces not found' });
         }

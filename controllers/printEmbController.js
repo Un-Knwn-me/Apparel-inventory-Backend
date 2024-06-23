@@ -59,7 +59,7 @@ exports.deletePrintEmb = async (req, res) => {
     try {
         const deleted = await PrintEmbName.destroy({ where: { id: req.params.id } });
         if (deleted) {
-          res.status(204).json();
+          res.status(202).json({ message: 'Print EMB type deleted successfully' });
         } else {
           res.status(404).json({ error: 'Print EMB type not found' });
         }

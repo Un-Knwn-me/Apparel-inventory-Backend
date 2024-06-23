@@ -6,7 +6,7 @@ const stitchDetailController = require('../controllers/stitchDetailController');
 router.post('/create', stitchDetailController.createStitchDetail);
 
 // Get all stitch details
-router.get('/', stitchDetailController.getAllStitchDetails);
+router.get('/getall', stitchDetailController.getAllStitchDetails);
 
 // Get stitch detail by id
 router.get('/:id', stitchDetailController.getStitchDetailById);

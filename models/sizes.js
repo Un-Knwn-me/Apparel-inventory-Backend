@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
       },
       sizes: {
-        type: DataTypes.JSON,
+        type: DataTypes.ARRAY(DataTypes.STRING),
       },
       isActive: {
         type: DataTypes.BOOLEAN,

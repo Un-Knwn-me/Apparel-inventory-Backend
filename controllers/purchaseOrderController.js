@@ -200,7 +200,7 @@ exports.deletePurchaseOrderById = async (req, res) => {
 
     await purchaseOrder.destroy();
 
-    res.status(200).json({ message: 'Purchase order deleted successfully' });
+    res.status(202).json({ message: 'Purchase order deleted successfully' });
   } catch (error) {
     console.error('Error deleting purchase order:', error);
     res.status(500).json({ error: 'An error occurred while deleting the purchase order' });
