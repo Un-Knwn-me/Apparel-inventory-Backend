@@ -1,26 +1,76 @@
+const { Op } = require('sequelize');
+const { hashCompare, createToken, hashPassword } = require('../middlewares/auth');
 const { User, Department, UserPermission, Permission, sequelize } = require('../models');
+const { storage, bucketName, bucket } = require('../middlewares/storage');
+const path = require('path');
+const { format } = require('util');
 
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
-    const { full_name, profile, password, email, phone_number, is_admin } = req.body;
+    const { full_name, password, email, phone_number, is_admin } = req.body;
 
     // Validate input
     if (!password || !email) {
       return res.status(400).json({ error: 'Password and email are required' });
     }
 
+    // check existing user
+    const existingUser = await User.findOne({ where: {  [Op.or]: [ 
+      { email: email },
+      { phone_number: phone_number }
+    ] }});
+
+    if (existingUser) {
+      return res.status(409).json({ error: 'Email or phone number already registered' });
+    }
+
+    const hashedPassword = await hashPassword(req.body.password);
+
+    // Handle profile image upload
+    let profileUrl = '';
+      if (req.file) {
+        // Upload profile image to Google Cloud Storage
+        const blob = bucket.file(`Profile/${Date.now()}_${path.basename(req.file.originalname)}`);
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+        });
+
+        blobStream.on('error', (err) => {
+          console.error('Blob stream error:', err);
+          res.status(500).json({ error: 'Failed to upload profile image' });
+        });
+
+        blobStream.on('finish', async () => {
+          // Construct the public URL
+          profileUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+
     // Create the new user
     const user = await User.create({
       full_name,
-      profile,
-      password,
+      profile: profileUrl,
+      password: hashedPassword,
       email,
       phone_number,
       is_admin
     });
 
     res.status(201).json(user);
+  });
+
+  blobStream.end(req.file.buffer);
+} else {
+  // Create the new user without profile image
+  const user = await User.create({
+    full_name,
+    profile: profileUrl,
+    password: hashedPassword,
+    email,
+    phone_number,
+    is_admin,
+  });
+  res.status(201).json(user);
+}
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'An error occurred while creating the user' });
@@ -55,7 +105,7 @@ exports.getUserById = async (req, res) => {
 // Update a user by ID
 exports.updateUser = async (req, res) => {
   try {
-    const { full_name, profile, password, email, phone_number, is_admin } = req.body;
+    const { full_name, password, email, phone_number, is_admin } = req.body;
 
     // Validate input
     if (!email) {
@@ -65,7 +115,6 @@ exports.updateUser = async (req, res) => {
     // Prepare the fields to update
     const updateFields = {
       full_name,
-      profile,
       email,
       phone_number,
       is_admin
@@ -73,19 +122,55 @@ exports.updateUser = async (req, res) => {
 
     // Only update the password if it's provided
     if (password) {
-      updateFields.password = password;
+      const hashedPassword = await hashPassword(password);
+      updateFields.password = hashedPassword;
     }
 
-    // Update the user
-    const [updated] = await User.update(updateFields, {
-      where: { id: req.params.id }
-    });
+    // Handle profile image upload
+    if (req.file) {
+      // Upload profile image to Google Cloud Storage
+      const blob = bucket.file(`Profile/${Date.now()}_${path.basename(req.file.originalname)}`);
+      const blobStream = blob.createWriteStream({
+        resumable: false,
+      });
 
-    if (updated) {
-      const updatedUser = await User.findByPk(req.params.id);
-      res.status(200).json(updatedUser);
+      blobStream.on('error', (err) => {
+        console.error('Blob stream error:', err);
+        res.status(500).json({ error: 'Failed to upload profile image' });
+      });
+
+      blobStream.on('finish', async () => {
+
+        // Construct the public URL
+        const profileUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+        updateFields.profile = profileUrl;
+
+        // Update the user in the database
+        const [updated] = await User.update(updateFields, {
+          where: { id: req.params.id }
+        });
+
+        if (updated) {
+          const updatedUser = await User.findByPk(req.params.id);
+          res.status(200).json(updatedUser);
+        } else {
+          res.status(404).json({ error: 'User not found' });
+        }
+      });
+
+      blobStream.end(req.file.buffer);
     } else {
-      res.status(404).json({ error: 'User not found' });
+      // Update the user without profile image
+      const [updated] = await User.update(updateFields, {
+        where: { id: req.params.id }
+      });
+
+      if (updated) {
+        const updatedUser = await User.findByPk(req.params.id);
+        res.status(200).json(updatedUser);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
     }
   } catch (error) {
     console.error('Error updating user:', error);
@@ -107,6 +192,31 @@ exports.deleteUser = async (req, res) => {
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// Delete user profile image by ID
+exports.deleteProfileImageLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the user by ID
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Remove the profile image link
+    user.profile = null;
+
+    // Save the updated user
+    await user.save();
+
+    res.status(200).json({ message: 'Profile image deleted successfully', user });
+  } catch (error) {
+    console.error('Error deleting profile image link:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the profile image link' });
   }
 };
 
@@ -452,5 +562,39 @@ exports.createUserWithPermission = async (req, res) => {
     await transaction.rollback();
     console.error('Error creating user with permission:', error);
     res.status(500).json({ error: `An error occurred while creating the user with permission: ${error.message}` });
+  }
+};
+
+// sign in a user
+exports.signIn = async (req, res) => {
+  try {
+    const { userVerify, password } = req.body;
+
+    let user = await User.findOne({
+      where: { [Op.or]: [ { email: userVerify }, { phone_number: userVerify } ] },
+    });
+
+    if (user) {
+      if (await hashCompare(password, user.password)) {
+        let token = createToken({
+          id: user.id,
+          full_name: user.full_name,
+        });
+
+        res.status(200).json({
+          message: "User successfully logged in",
+          token,
+          userName: user.full_name,
+          userId: user.id,
+        });
+      } else {
+        res.status(401).json({ message: "Invalid credentials" });
+      }
+    } else {
+      res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error", error });
   }
 };

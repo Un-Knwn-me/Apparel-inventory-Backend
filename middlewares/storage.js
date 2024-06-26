@@ -6,22 +6,14 @@ require('dotenv').config();
 
 const storage = new Storage({
   keyFilename: path.join(__dirname, '../google-credentials.json'),
-  projectId: process.env.ProjectId,
+  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
 });
 
 const bucketName = 'quco-inventory-management';
+const bucket = storage.bucket(bucketName);
 
-const multerStorage = multerGoogleStorage.storageEngine({
-  autoRetry: true,
-  bucket: 'quco-inventory-management',
-  projectId: 'Quco',
-  keyFilename: path.join(__dirname, '../google-credentials.json'),
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);    
-    // cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
+const multerStorage = multer.memoryStorage();
 
 const upload = multer({ storage: multerStorage });
 
-module.exports = {upload, storage, bucketName};
+module.exports = {upload, storage, bucketName, bucket};

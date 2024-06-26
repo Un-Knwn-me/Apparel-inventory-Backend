@@ -1,42 +1,11 @@
+const { bucket } = require('../middlewares/storage');
+const { format } = require('util');
+const path = require('path');
 const { Product, PurchaseOrder, Stock, StockHistory, Brand, Style, MeasurementChart, Category, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs } = require('../models');
 
 exports.createProduct = async (req, res) => {
-    try {
-      const {
-        reference_number,
-        style_id,
-        brand_id,
-        category_id,
-        fabric_id,
-        fabric_finish_id,
-        gsm_id,
-        knit_type_id,
-        color_id,
-        size_id,
-        decoration_id,
-        print_emb_id,
-        stitch_detail_id,
-        neck_id,
-        sleeve_id,
-        length_id,
-        packing_method_id,
-        inner_pcs_id,
-        outer_carton_pcs_id,
-        measurement_chart_id,
-        is_Stocked,
-        images,
-        created_at
-      } = req.body;
-
-    // Check if a product with the same reference_number already exists
-    const existingProduct = await Product.findOne({ where: { reference_number } });
-
-    if (existingProduct) {
-      return res.status(400).json({ error: 'Product with this reference number already exists' });
-    }
-  
-    // Create the new Brand
-    const product = await Product.create({
+  try {
+    const {
       reference_number,
       style_id,
       brand_id,
@@ -58,11 +27,104 @@ exports.createProduct = async (req, res) => {
       outer_carton_pcs_id,
       measurement_chart_id,
       is_Stocked,
-      images,
       created_at
-    });
-  
+    } = req.body;
+
+    // Check if a product with the same reference_number already exists
+    const existingProduct = await Product.findOne({ where: { reference_number } });
+
+    if (existingProduct) {
+      return res.status(400).json({ error: 'Product with this reference number already exists' });
+    }
+
+    // Extract image URLs from the files uploaded
+    const imageUrls = [];
+
+    if (req.files && req.files.length > 0) {
+      // Loop through the uploaded files and upload each to the cloud bucket
+      for (const file of req.files) {
+        const originalname = file.originalname;
+        const blob = bucket.file(`Products/${Date.now()}_${path.basename(originalname)}`);
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+        });
+
+        blobStream.on('error', (err) => {
+          console.error('Blob stream error:', err);
+          res.status(500).json({ error: 'Failed to upload image' });
+        });
+
+        blobStream.on('finish', async () => {
+
+          // Generate the public URL for the file
+          const url = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+          imageUrls.push(url);
+
+          // Proceed with product creation once all files are uploaded
+          if (imageUrls.length === req.files.length) {
+            // Create the new product with image URLs
+            const product = await Product.create({
+              reference_number,
+              style_id,
+              brand_id,
+              category_id,
+              fabric_id,
+              fabric_finish_id,
+              gsm_id,
+              knit_type_id,
+              color_id,
+              size_id,
+              decoration_id,
+              print_emb_id,
+              stitch_detail_id,
+              neck_id,
+              sleeve_id,
+              length_id,
+              packing_method_id,
+              inner_pcs_id,
+              outer_carton_pcs_id,
+              measurement_chart_id,
+              is_Stocked,
+              images: imageUrls,
+              created_at
+            });
+
+            res.status(201).json(product);
+          }
+        });
+
+        blobStream.end(file.buffer);
+      }
+    } else {
+      // Create the product without images if no files are uploaded
+      const product = await Product.create({
+        reference_number,
+        style_id,
+        brand_id,
+        category_id,
+        fabric_id,
+        fabric_finish_id,
+        gsm_id,
+        knit_type_id,
+        color_id,
+        size_id,
+        decoration_id,
+        print_emb_id,
+        stitch_detail_id,
+        neck_id,
+        sleeve_id,
+        length_id,
+        packing_method_id,
+        inner_pcs_id,
+        outer_carton_pcs_id,
+        measurement_chart_id,
+        is_Stocked,
+        images: imageUrls,
+        created_at
+      });
+
       res.status(201).json(product);
+    }
     } catch (error) {
       console.error('Error creating brand:', error);
       res.status(500).json({ error: 'An error occurred while creating the brand' });
@@ -144,7 +206,7 @@ exports.updateProductById = async (req, res) => {
   try {
     const productId = req.params.id;
     const updatedFields = req.body;
-    
+
     // Find the product by ID first
     const product = await Product.findByPk(productId);
 
@@ -152,10 +214,48 @@ exports.updateProductById = async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    // Update the product with only the fields provided in the request body
-    await product.update(updatedFields);
+    // If there are images in the request, handle the upload to Google Cloud Storage
+    if (req.files && req.files.length > 0) {
+      const imageUrls = [];
 
-    res.status(200).json(product);
+      for (const file of req.files) {
+        const originalname = file.originalname;
+        const blob = bucket.file(`products/${Date.now()}_${path.basename(originalname)}`);
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+        });
+
+        blobStream.on('error', (err) => {
+          console.error('Blob stream error:', err);
+          return res.status(500).json({ error: 'Failed to upload image' });
+        });
+
+        blobStream.on('finish', async () => {
+
+          // Generate the public URL for the file
+          const url = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
+          imageUrls.push(url);
+
+          // Proceed with product update once all files are uploaded
+          if (imageUrls.length === req.files.length) {
+            // Merge the new image URLs with the existing images (if any)
+            const existingImages = product.images || [];
+            updatedFields.images = existingImages.concat(imageUrls);
+
+            // Update the product with the new fields
+            await product.update(updatedFields);
+
+            res.status(200).json(product);
+          }
+        });
+
+        blobStream.end(file.buffer);
+      }
+    } else {
+      // If no new images are uploaded, just update the product with the provided fields
+      await product.update(updatedFields);
+      res.status(200).json(product);
+    }
   } catch (error) {
     console.error('Error updating product:', error);
     res.status(500).json({ error: 'An error occurred while updating the product' });
