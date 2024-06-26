@@ -1,4 +1,4 @@
-const { Product, Brand, Style, MeasurementChart, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs } = require('../models');
+const { Product, PurchaseOrder, Stock, StockHistory, Brand, Style, MeasurementChart, Category, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs } = require('../models');
 
 exports.createProduct = async (req, res) => {
     try {
@@ -6,6 +6,7 @@ exports.createProduct = async (req, res) => {
         reference_number,
         style_id,
         brand_id,
+        category_id,
         fabric_id,
         fabric_finish_id,
         gsm_id,
@@ -26,12 +27,20 @@ exports.createProduct = async (req, res) => {
         images,
         created_at
       } = req.body;
+
+    // Check if a product with the same reference_number already exists
+    const existingProduct = await Product.findOne({ where: { reference_number } });
+
+    if (existingProduct) {
+      return res.status(400).json({ error: 'Product with this reference number already exists' });
+    }
   
     // Create the new Brand
     const product = await Product.create({
       reference_number,
       style_id,
       brand_id,
+      category_id,
       fabric_id,
       fabric_finish_id,
       gsm_id,
@@ -72,6 +81,7 @@ exports.createProduct = async (req, res) => {
           { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
           { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
           { model: Color, attributes: ['id', 'colorName', 'isActive'] },
+          { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
           { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
           { model: Decoration, attributes: ['id', 'decorationName', 'isActive'] },
           { model: PrintEmbName, attributes: ['id', 'printType', 'isActive'] },
@@ -105,6 +115,7 @@ exports.getProductById = async (req, res) => {
           { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
           { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
           { model: Color, attributes: ['id', 'colorName', 'isActive'] },
+          { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
           { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
           { model: Decoration, attributes: ['id', 'decorationName', 'isActive'] },
           { model: PrintEmbName, attributes: ['id', 'printType', 'isActive'] },
@@ -153,7 +164,6 @@ exports.updateProductById = async (req, res) => {
 
 
 // Delete product 
-
 exports.deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -164,6 +174,18 @@ exports.deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Product not found' });
     }
+
+    // Nullify the stock_id in products referencing the stock to be deleted
+    await Product.update({ stock_id: null }, { where: { id: productId } });
+
+    // Delete all related stock histories
+    await StockHistory.destroy({ where: { product_id: productId } });
+
+    // Delete all related stocks
+    await Stock.destroy({ where: { product_id: productId } });
+
+    // Delete all related purchase orders
+    await PurchaseOrder.destroy({ where: { product_id: productId } });
 
     // Delete the product
     await product.destroy();

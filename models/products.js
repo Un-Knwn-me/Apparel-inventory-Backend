@@ -51,6 +51,13 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id',
         },
       },
+      category_id: {
+        type: DataTypes.INTEGER,
+        references: {
+          model: 'Category',
+          key: 'id',
+        },
+      },
       color_id: {
         type: DataTypes.INTEGER,
         references: {
@@ -165,6 +172,7 @@ module.exports = (sequelize, DataTypes) => {
       Product.belongsTo(models.Gsm, { foreignKey: 'gsm_id' });
       Product.belongsTo(models.KnitType, { foreignKey: 'knit_type_id' });
       Product.belongsTo(models.Color, { foreignKey: 'color_id' });
+      Product.belongsTo(models.Category, { foreignKey: 'category_id' });
       Product.belongsTo(models.Size, { foreignKey: 'size_id' });
       Product.belongsTo(models.Decoration, { foreignKey: 'decoration_id' });
       Product.belongsTo(models.PrintEmbName, { foreignKey: 'print_emb_id' });

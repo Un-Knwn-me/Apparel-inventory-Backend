@@ -1,29 +1,29 @@
 module.exports = (sequelize, DataTypes) => {
-    const Size = sequelize.define('Size', {
+    const Category = sequelize.define('Category', {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
+        allowNull: false
       },
-      type_name: {
+      categoryName: {
         type: DataTypes.STRING,
         unique: true,
-      },
-      sizes: {
-        type: DataTypes.JSON,
+        allowNull: false,
       },
       isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+        allowNull: false,
       }
     }, {
-        tableName: 'Sizes',
+        tableName: 'Category',
         timestamps: false,
     });
 
-    Size.associate = function(models) {
-      Size.hasMany(models.Product, { foreignKey: 'size_id' });
+    Category.associate = function(models) {
+      Category.hasMany(models.Product, { foreignKey: 'category_id' });
     };
   
-    return Size;
+    return Category;
   };

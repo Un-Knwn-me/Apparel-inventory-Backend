@@ -22,6 +22,14 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   }, {
     indexes: [
       {
@@ -30,14 +38,14 @@ module.exports = (sequelize, DataTypes) => {
       }
     ],
     tableName: 'UserPermissions',
-    timestamps: false,
+    timestamps: true,
   });
 
   UserPermission.associate = function(models) {
     UserPermission.belongsTo(models.User, { foreignKey: 'user_id' });
     UserPermission.belongsTo(models.Permission, { foreignKey: 'permission_id' });
     UserPermission.belongsTo(models.Department, { foreignKey: 'department_id' });
-};
+  };
 
   return UserPermission;
 };

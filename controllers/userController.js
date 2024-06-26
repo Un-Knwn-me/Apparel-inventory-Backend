@@ -1,12 +1,12 @@
-const { User, Department } = require('../models');
+const { User, Department, UserPermission, Permission, sequelize } = require('../models');
 
 // Create a new user
 exports.createUser = async (req, res) => {
   try {
-    const { full_name, profile, password_hash, email, phone_number, is_admin } = req.body;
+    const { full_name, profile, password, email, phone_number, is_admin } = req.body;
 
     // Validate input
-    if (!password_hash || !email) {
+    if (!password || !email) {
       return res.status(400).json({ error: 'Password and email are required' });
     }
 
@@ -14,7 +14,7 @@ exports.createUser = async (req, res) => {
     const user = await User.create({
       full_name,
       profile,
-      password_hash,
+      password,
       email,
       phone_number,
       is_admin
@@ -30,7 +30,7 @@ exports.createUser = async (req, res) => {
 // Get all users
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await db.Users.findAll();
+    const users = await User.findAll();
     res.status(200).json(users);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -40,7 +40,7 @@ exports.getAllUsers = async (req, res) => {
 // Get a user by ID
 exports.getUserById = async (req, res) => {
   try {
-    const user = await db.Users.findByPk(req.params.id);
+    const user = await User.findByPk(req.params.id);
     if (user) {
       res.status(200).json(user);
     } else {
@@ -51,31 +51,57 @@ exports.getUserById = async (req, res) => {
   }
 };
 
+
 // Update a user by ID
 exports.updateUser = async (req, res) => {
   try {
-    const [updated] = await db.Users.update(req.body, {
+    const { full_name, profile, password, email, phone_number, is_admin } = req.body;
+
+    // Validate input
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Prepare the fields to update
+    const updateFields = {
+      full_name,
+      profile,
+      email,
+      phone_number,
+      is_admin
+    };
+
+    // Only update the password if it's provided
+    if (password) {
+      updateFields.password = password;
+    }
+
+    // Update the user
+    const [updated] = await User.update(updateFields, {
       where: { id: req.params.id }
     });
+
     if (updated) {
-      const updatedUser = await db.Users.findByPk(req.params.id);
+      const updatedUser = await User.findByPk(req.params.id);
       res.status(200).json(updatedUser);
     } else {
       res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'An error occurred while updating the user' });
   }
 };
+
 
 // Delete a user by ID
 exports.deleteUser = async (req, res) => {
   try {
-    const deleted = await db.Users.destroy({
+    const deleted = await User.destroy({
       where: { id: req.params.id }
     });
     if (deleted) {
-      res.status(204).send();
+      res.status(202).send({ message: 'User deleted successfully' });
     } else {
       res.status(404).json({ error: 'User not found' });
     }
@@ -170,11 +196,69 @@ exports.getDepartments = async (req, res) => {
   }
 };
 
+// Get department by ID
+exports.getDepartmentById = async (req, res) => {
+  try {
+    const department = await Department.findByPk(req.params.id);
+    if (department) {
+      res.status(200).json(department);
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching department:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the department' });
+  }
+};
+
+// Update department by ID
+exports.updateDepartment = async (req, res) => {
+  try {
+    const { departmentName, isActive } = req.body;
+
+    // Validate input
+    if (!departmentName && isActive === undefined) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    // Find and update the department
+    const [updated] = await Department.update(req.body, {
+      where: { id: req.params.id }
+    });
+    if (updated) {
+      const updatedDepartment = await Department.findByPk(req.params.id);
+      res.status(200).json(updatedDepartment);
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    console.error('Error updating department:', error);
+    res.status(500).json({ error: 'An error occurred while updating the department' });
+  }
+};
+
+// Delete department by ID
+exports.deleteDepartment = async (req, res) => {
+  try {
+    const deleted = await Department.destroy({
+      where: { id: req.params.id }
+    });
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Department not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting department:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the department' });
+  }
+};
+
 exports.createPermission = async (req, res) => {
   try {
-    const { name } = req.body;
-    const permission = await Permission.create({ name });
-    res.status(201).json(permission);
+    const { permission } = req.body;
+    const data = await Permission.create({ permission });
+    res.status(201).json({ message: "New permission created successfully", data });
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while creating the permission' });
   }
@@ -186,6 +270,64 @@ exports.getPermissions = async (req, res) => {
     res.status(200).json(permissions);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while fetching permissions' });
+  }
+};
+
+// Get permission by ID
+exports.getPermissionById = async (req, res) => {
+  try {
+    const permission = await Permission.findByPk(req.params.id);
+    if (permission) {
+      res.status(200).json(permission);
+    } else {
+      res.status(404).json({ error: 'Permission not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching permission:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the permission' });
+  }
+};
+
+// Update permission by ID
+exports.updatePermission = async (req, res) => {
+  try {
+    const { permission } = req.body;
+
+    if (!permission) {
+      return res.status(400).json({ error: 'Permission name is required' });
+    }
+
+    const [updated] = await Permission.update({ permission }, {
+      where: { id: req.params.id }
+    });
+
+    if (updated) {
+      const updatedPermission = await Permission.findByPk(req.params.id);
+      res.status(200).json(updatedPermission);
+    } else {
+      res.status(404).json({ error: 'Permission not found' });
+    }
+  } catch (error) {
+    console.error('Error updating permission:', error);
+    res.status(500).json({ error: 'An error occurred while updating the permission' });
+  }
+};
+
+// Delete permission by ID
+exports.deletePermission = async (req, res) => {
+  try {
+    const deleted = await Permission.destroy({
+      where: { id: req.params.id }
+    });
+
+    if (deleted) {
+      res.status(202).send({ message: 'Permission deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Permission not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting permission:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the permission' });
   }
 };
 
@@ -208,9 +350,11 @@ exports.assignPermission = async (req, res) => {
 
     res.status(201).json({ message: 'Permission assigned successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'An error occurred while assigning the permission' });
+    console.error('Error assigning permission:', error);
+    res.status(500).json({ error: `An error occurred while assigning the permission: ${error.message}` });
   }
 };
+
 
 // Remove a permission from a user
 exports.removePermission = async (req, res) => {
@@ -256,6 +400,57 @@ exports.getUserPermissions = async (req, res) => {
 
     res.status(200).json(user);
   } catch (error) {
+    console.error('Error retrieving user permissions:', error);
     res.status(500).json({ error: 'An error occurred while retrieving user permissions' });
+  }
+};
+
+
+// create user with permissions
+exports.createUserWithPermission = async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const { full_name, profile, password, email, phone_number, is_admin, departmentId, permissionId } = req.body;
+
+    // Validate input
+    if (!password || !email) {
+      return res.status(400).json({ error: 'Password and email are required' });
+    }
+
+    // Create the new user within a transaction
+    const user = await User.create({
+      full_name,
+      profile,
+      password,
+      email,
+      phone_number,
+      is_admin
+    }, { transaction });
+
+    // Check if the department and permission exist
+    const department = await Department.findByPk(departmentId);
+    const permission = await Permission.findByPk(permissionId);
+
+    if (!department || !permission) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Department or Permission not found' });
+    }
+
+    // Create the UserPermission entry within the same transaction
+    await UserPermission.create({
+      user_id: user.id,
+      department_id: departmentId,
+      permission_id: permissionId
+    }, { transaction });
+
+    // Commit the transaction
+    await transaction.commit();
+
+    res.status(201).json({ message: 'User created and permission assigned successfully', user });
+  } catch (error) {
+    await transaction.rollback();
+    console.error('Error creating user with permission:', error);
+    res.status(500).json({ error: `An error occurred while creating the user with permission: ${error.message}` });
   }
 };
