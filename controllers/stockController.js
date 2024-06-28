@@ -1,4 +1,4 @@
-const { Stock, Product, StockHistory, PurchaseOrder, Brand, Style, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs, MeasurementChart } = require('../models');
+const { Stock, Product, StockHistory, PurchaseOrder, Category, Brand, Style, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs, MeasurementChart } = require('../models');
 
 exports.createStockEntry = async (req, res) => {
     try {
@@ -72,6 +72,7 @@ exports.createStockEntry = async (req, res) => {
                 { model: Fabric, attributes: ['id', 'fabricName', 'isActive'] },
                 { model: FabricFinish, attributes: ['id', 'fabricFinishName', 'isActive'] },
                 { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
+                { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
                 { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
                 { model: Color, attributes: ['id', 'colorName', 'isActive'] },
                 { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
@@ -111,6 +112,7 @@ exports.createStockEntry = async (req, res) => {
                 { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
                 { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
                 { model: Color, attributes: ['id', 'colorName', 'isActive'] },
+                { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
                 { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
                 { model: Decoration, attributes: ['id', 'decorationName', 'isActive'] },
                 { model: PrintEmbName, attributes: ['id', 'printType', 'isActive'] },

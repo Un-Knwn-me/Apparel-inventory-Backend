@@ -34,6 +34,7 @@ let purchaseRouter = require("./routes/purchaseOrders");
 let stockRouter = require("./routes/stocks");
 let stockOutRouter = require("./routes/stockOut");
 let reportRouter = require("./routes/reports");
+let notificationRouter = require("./routes/notification");
 
 dotenv.config();
 var app = express();
@@ -86,6 +87,7 @@ app.use("/purchases", purchaseRouter);
 app.use("/stocks", stockRouter);
 app.use("/stockOut", stockOutRouter);
 app.use("/reports", reportRouter);
+app.use("/notifications", notificationRouter);
 
 // Test db connection
 app.get('/test-db', async (req, res) => {

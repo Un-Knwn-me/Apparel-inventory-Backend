@@ -296,3 +296,32 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while deleting the product' });
   }
 };
+
+// Delete product image
+exports.deleteProductImageLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { imageUrl } = req.body;
+
+    // Find the product by ID
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Remove the specific image link from the images array
+    const updatedImages = product.images.filter(image => image !== imageUrl);
+
+    // Update the product's images array
+    product.images = updatedImages;
+
+    // Save the updated product
+    await product.save();
+
+    res.status(200).json({ message: 'Product image link deleted successfully', product });
+  } catch (error) {
+    console.error('Error deleting product image link:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the product image link' });
+  }
+};

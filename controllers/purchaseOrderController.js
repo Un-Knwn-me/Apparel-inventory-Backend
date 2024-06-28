@@ -1,4 +1,4 @@
-const { PurchaseOrder, Product, Brand, Style, MeasurementChart, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs } = require('../models');
+const { PurchaseOrder, Product, Category, Brand, Style, MeasurementChart, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs } = require('../models');
 
 
 exports.createPurchaseOrder = async (req, res) => {
@@ -76,6 +76,7 @@ exports.getAllPurchaseOrders = async (req, res) => {
             { model: Fabric, attributes: ['id', 'fabricName', 'isActive'] },
             { model: FabricFinish, attributes: ['id', 'fabricFinishName', 'isActive'] },
             { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
+            { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
             { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
             { model: Color, attributes: ['id', 'colorName', 'isActive'] },
             { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
@@ -112,6 +113,7 @@ exports.getPurchaseOrderById = async (req, res) => {
             { model: Fabric, attributes: ['id', 'fabricName', 'isActive'] },
             { model: FabricFinish, attributes: ['id', 'fabricFinishName', 'isActive'] },
             { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
+            { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
             { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
             { model: Color, attributes: ['id', 'colorName', 'isActive'] },
             { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
@@ -229,6 +231,7 @@ exports.getPurchaseOrdersByType = async (req, res) => {
             { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
             { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
             { model: Color, attributes: ['id', 'colorName', 'isActive'] },
+            { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
             { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
             { model: Decoration, attributes: ['id', 'decorationName', 'isActive'] },
             { model: PrintEmbName, attributes: ['id', 'printType', 'isActive'] },

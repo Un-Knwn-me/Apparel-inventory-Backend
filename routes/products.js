@@ -20,4 +20,7 @@ router.put('/:id', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.UPDATE), u
 // Delete product
 router.delete('/:id', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.DELETE), productController.deleteProduct);
 
+// Delete image from product
+router.delete('/deleteImage/:id', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.DELETE), productController.deleteProductImageLink);
+
 module.exports = router;
