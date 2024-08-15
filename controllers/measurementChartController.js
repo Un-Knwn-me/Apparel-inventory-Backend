@@ -5,11 +5,11 @@ const { format } = require('util');
 
 exports.createMeasurementChart = async (req, res) => {
   try {
-    const { name, sizes } = req.body;
+    const { name, sizes, category } = req.body;
 
     // Validate input
-    if (!name || !sizes) {
-      return res.status(400).json({ error: 'Name, sizes are required' });
+    if (!name || !sizes || !category) {
+      return res.status(400).json({ error: 'Name, sizes, category are required' });
     }
     let sampleSizeFileUrl = '';
 
@@ -32,7 +32,7 @@ exports.createMeasurementChart = async (req, res) => {
           sampleSizeFileUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`);
 
           // Create the new MeasurementChart with the file URL
-          const measurementChart = await MeasurementChart.create({ name, sizes, sample_size_file: sampleSizeFileUrl });
+          const measurementChart = await MeasurementChart.create({ name, sizes, category, sample_size_file: sampleSizeFileUrl });
           res.status(201).json(measurementChart);
         } catch (error) {
           console.error('Error making file public:', error);
@@ -43,7 +43,7 @@ exports.createMeasurementChart = async (req, res) => {
       blobStream.end(req.file.buffer);
     } else {
       // Create the new MeasurementChart without file URL
-      const measurementChart = await MeasurementChart.create({ name, sizes });
+      const measurementChart = await MeasurementChart.create({ name, sizes, category });
       res.status(201).json(measurementChart);
     }
   } catch (error) {

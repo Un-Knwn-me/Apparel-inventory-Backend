@@ -15,6 +15,9 @@ module.exports = (sequelize, DataTypes) => {
       sample_size_file: {
         type: DataTypes.STRING,
       },
+      category: {
+        type: DataTypes.STRING,
+      },
       isActive: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
@@ -26,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
 
     MeasurementChart.associate = function(models) {
       MeasurementChart.hasMany(models.Product, { foreignKey: 'measurement_chart_id' });
+      MeasurementChart.hasMany(models.PurchaseOrder, { foreignKey: 'measurement_chart_id' });
     };
   
     return MeasurementChart;

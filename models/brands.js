@@ -1,4 +1,4 @@
-module.exports = (sequelize, DataTypes) => { 
+module.exports = (sequelize, DataTypes) => {
 
 
   const Brand = sequelize.define('Brand', {
@@ -22,9 +22,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Brand.associate = function(models) {
-    Brand.hasMany(models.Product, {
-      foreignKey: 'brand_id',
-    });
+    Brand.hasMany(models.Product, { foreignKey: 'brand_id' });
+    Brand.hasMany(models.PurchaseOrder, { foreignKey: 'brand_id' });
   };
 
   return Brand;

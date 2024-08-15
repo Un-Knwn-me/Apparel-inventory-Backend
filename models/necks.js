@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Neck.associate = function(models) {
       Neck.hasMany(models.Product, { foreignKey: 'neck_id' });
+      Neck.hasMany(models.PurchaseOrder, { foreignKey: 'neck_id' });
     };
   
     return Neck;

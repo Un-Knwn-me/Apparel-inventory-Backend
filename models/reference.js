@@ -1,12 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
-    const InnerPcs = sequelize.define('InnerPcs', {
+    const Reference = sequelize.define('Reference', {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      number_of_pcs: {
-        type: DataTypes.INTEGER,
+      reference_no: {
+        type: DataTypes.STRING,
         unique: true,
       },
       isActive: {
@@ -14,13 +14,13 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: true,
       }
     }, {
-        tableName: 'InnerPcs',
+        tableName: 'Reference',
         timestamps: false,
     });
-  
-    InnerPcs.associate = function(models) {
-      InnerPcs.hasMany(models.Product, { foreignKey: 'inner_pcs_id' });
-    };
 
-    return InnerPcs;
-  };  
+    Reference.associate = function(models) {
+      Reference.hasMany(models.Product, { foreignKey: 'reference_id' });
+    };
+  
+    return Reference;
+  };

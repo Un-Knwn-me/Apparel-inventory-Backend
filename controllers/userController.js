@@ -586,6 +586,7 @@ exports.signIn = async (req, res) => {
           token,
           userName: user.full_name,
           userId: user.id,
+          profile: user.profile
         });
       } else {
         res.status(401).json({ message: "Invalid credentials" });

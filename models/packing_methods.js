@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
 
     PackingMethod.associate = function(models) {
       PackingMethod.hasMany(models.Product, { foreignKey: 'packing_method_id' });
+      PackingMethod.hasMany(models.PurchaseOrder, { foreignKey: 'packing_method_id' });
     };
   
     return PackingMethod;

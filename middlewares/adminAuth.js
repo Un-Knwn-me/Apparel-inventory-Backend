@@ -1,5 +1,5 @@
 const { decodeToken } = require("./auth");
-const { User, UserPermission } = require('../models');
+const { User, UserPermission, Department, Permission } = require('../models');
 
 require('dotenv').config();
 
@@ -50,9 +50,9 @@ const verifyPermission = (department, requiredPermission) => {
       if (req.headers.authorization) {
         let token = req.headers.authorization.split(' ')[1];
         let data = await decodeToken(token);
-        
+        console.log(data.isAdmin);
         if (data.is_admin) {
-          return next(); // Admins have all permissions
+          return next(); 
         }
         
         const userPermissions = await UserPermission.findOne({

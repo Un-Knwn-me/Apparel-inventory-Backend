@@ -1,23 +1,30 @@
 const { Brand } = require('../models');
 
 exports.createBrand = async (req, res) => {
-    try {
-      const { brandName } = req.body;
-  
-      // check validate input
-      if (!brandName) {
-        return res.status(400).json({ error: 'Brand Name is required' });
-      }
-  
-    // Create the new Brand
-    const brand = await Brand.create({ brandName }); 
-  
-      res.status(201).json(brand);
-    } catch (error) {
-      console.error('Error creating brand:', error);
-      res.status(500).json({ error: 'An error occurred while creating the brand' });
+  try {
+    const { brandName } = req.body;
+
+    // check validate input
+    if (!brandName) {
+      return res.status(400).json({ error: 'Brand Name is required' });
     }
-  };
+
+  // Check if the brand already exists
+  const existingBrand = await Brand.findOne({ where: { brandName } });
+  if (existingBrand) {
+    return res.status(409).json({ error: 'Brand already exists' });
+  }
+
+  // Create the new Brand
+  const brand = await Brand.create({ brandName });
+
+    res.status(201).json(brand);
+  } catch (error) {
+    console.error('Error creating brand:', error);
+    res.status(500).json({ error: 'An error occurred while creating the brand' });
+  }
+};
+
 
 exports.getAllBrands = async (req, res) => {
     try {

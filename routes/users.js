@@ -5,7 +5,7 @@ const { upload } = require('../middlewares/storage');
 const { roleAdmin } = require('../middlewares/adminAuth');
 
 // Create a new user
-router.post('/create', roleAdmin, upload.single('profile'), userController.createUser);
+router.post('/create', upload.single('profile'), userController.createUser);
 
 // Delete user profile picture
 router.delete('/deleteProfile/:id', roleAdmin, userController.deleteProfileImageLink);

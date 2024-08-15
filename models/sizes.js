@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Size.associate = function(models) {
       Size.hasMany(models.Product, { foreignKey: 'size_id' });
+      Size.hasMany(models.PurchaseOrder, { foreignKey: 'size_id' });
     };
   
     return Size;

@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
 
     KnitType.associate = function(models) {
       KnitType.hasMany(models.Product, { foreignKey: 'knit_type_id' });
+      KnitType.hasMany(models.PurchaseOrder, { foreignKey: 'knit_type_id' });
     };
   
     return KnitType;

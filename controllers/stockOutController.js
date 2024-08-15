@@ -1,4 +1,4 @@
-const { Stock, StockHistory, Product, PurchaseOrder, Brand, Style, MeasurementChart, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs, Category } = require('../models');
+const { Stock, StockHistory, Product, PurchaseOrder, Brand, Reference, MeasurementChart, Fabric, FabricFinish, Gsm, KnitType, Color, Size, Decoration, PrintEmbName, StitchDetail, Neck, Sleeve, Length, PackingMethod, InnerPcs, OuterCartonPcs, Category } = require('../models');
 
 exports.CreateStockOut = async (req, res) => {
   try {
@@ -49,6 +49,119 @@ exports.CreateStockOut = async (req, res) => {
 };
 
 
+// Create without purchase stock out
+exports.createPurchaseOrderAndStockOut = async (req, res) => {
+  try {
+    const {
+      order_type,
+      buyer_id,
+      delivery_date,
+      product_style_number,
+      product_id,
+      notes,
+      packing_type,
+      purchase_by_size,
+      req_bundle,
+      req_purchase_qty,
+    } = req.body;
+
+    // Step 1: Create Purchase Order
+    // Check if the purchase order number already exists
+    let finalPurchaseOrderNumber;
+
+    if (order_type === 'Without Purchase Order') {
+      // Generate the next purchase order number for 'Without Purchase Order'
+      const lastOrder = await PurchaseOrder.findOne({
+        where: { order_type: 'Without Purchase Order' },
+        order: [['created_at', 'DESC']],
+      });
+
+      if (lastOrder) {
+        const lastOrderNumber = lastOrder.purchase_order_number;
+        const orderNumber = parseInt(lastOrderNumber.replace('WPO', ''), 10);
+        finalPurchaseOrderNumber = `WPO${String(orderNumber + 1).padStart(3, '0')}`;
+      } else {
+        finalPurchaseOrderNumber = 'WPO001';
+      }
+    }
+
+  // Create the purchase order with the product ID
+  const purchaseOrder = await PurchaseOrder.create({
+    order_type,
+    purchase_order_number: finalPurchaseOrderNumber,
+    buyer_id,
+    delivery_date,
+    product_style_number,
+    product_id,
+    notes,
+    packing_type,
+    purchase_by_size,
+    req_bundle,
+    req_purchase_qty,
+  });
+
+    // Step 2: Process Stock Out
+    // Fetch the product using the product style number
+    const product = await Product.findOne({ where: { style_no: product_style_number } });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Fetch the stock entry
+    const stock = await Stock.findOne({ where: { product_style_number } });
+    // const stock = await Stock.findByPk(stock_id);
+
+    if (!stock) {
+      return res.status(404).json({ error: 'Stock not found' });
+    }
+
+    // Check if the stock out quantity is available for each size
+    for (const item of purchase_by_size) {
+      const stockItem = stock.stock_by_size.find(stockSize => stockSize.size === item.size);
+      if (!stockItem || stockItem.outerPcs < item.outerPcs) {
+        return res.status(400).json({ error: `Insufficient stock available for size ${item.size}` });
+      }
+    }
+
+    // Check if the stock out bundle quantity is available
+    if (stock.no_bundles < req_bundle) {
+      return res.status(400).json({ error: 'Insufficient stock bundles available' });
+    }
+
+    // Update the stock quantities by size
+    for (const item of purchase_by_size) {
+      const stockItem = stock.stock_by_size.find(stockSize => stockSize.size === item.size);
+      stockItem.outerPcs -= item.outerPcs;
+      stockItem.innerPcs -= item.innerPcs;
+    }
+
+    // Update the stock bundles and total pieces
+    stock.no_bundles -= req_bundle;
+    stock.total_pcs -= req_purchase_qty;
+
+    await stock.save();
+
+    // Create a stock history entry
+    const stockHistory = await StockHistory.create({
+      stock_id: stock.id,
+      stockOut_by_size: purchase_by_size,
+      stockOut_bundle: req_bundle,
+      total_stockOut_pcs: req_purchase_qty,
+      product_id: product.id,
+      stock_type: 'Stock Out',
+      purchase_order_number: purchaseOrder.purchase_order_number,
+      purchase_order_id: purchaseOrder.id,
+    });
+
+    res.status(201).json({ message: 'Purchase order and stock out recorded successfully', purchaseOrder, stock, stockHistory });
+  } catch (error) {
+    console.error('Error processing purchase order and stock out:', error);
+    res.status(500).json({ error: 'An error occurred while processing the purchase order and stock out' });
+  }
+};
+
+// Get all stock out data
 exports.getAllStockOut = async (req, res) => {
   try {
     const stockOutData = await StockHistory.findAll({
@@ -56,20 +169,25 @@ exports.getAllStockOut = async (req, res) => {
       include: [
         {
           model: Stock,
-          attributes: ['id', 'product_reference_number', 'stock_by_size', 'no_bundles', 'total_inner_pcs', 'total_pcs_in_bundle', 'created_at'],
+          attributes: ['id', 'product_style_number', 'stock_by_size', 'no_bundles', 'total_pcs', 'created_at'],
           include: [
             {
               model: Product,
-              attributes: ['id', 'reference_number', 'style_id', 'brand_id', 'fabric_id', 'fabric_finish_id', 'gsm_id', 'knit_type_id', 'color_id', 'size_id', 'decoration_id', 'print_emb_id', 'stitch_detail_id', 'neck_id', 'sleeve_id', 'length_id', 'packing_method_id', 'inner_pcs_id', 'outer_carton_pcs_id', 'measurement_chart_id', 'is_Stocked', 'images', 'created_at'],
+              attributes: [
+                'id', 'reference_id', 'style_no', 'short_description', 'full_description', 'brand_id', 'fabric_id', 'fabric_finish_id',
+                'gsm_id', 'knit_type_id', 'color_id', 'size_id', 'decoration_id', 'print_emb_id', 'stitch_detail_id', 'neck_id',
+                'sleeve_id', 'length_id', 'packing_method_id', 'inner_pcs', 'category_id', 'productType_id', 'measurement_chart_id',
+                'is_Stocked', 'images', 'created_at'
+              ],
               include: [
                 { model: Brand, attributes: ['id', 'brandName', 'isActive'] },
-                { model: Style, attributes: ['id', 'style_no', 'short_description', 'full_description', 'isActive'] },
+                { model: Reference, attributes: ['id', 'reference_no', 'isActive'] },
                 { model: MeasurementChart, attributes: ['id', 'name', 'sizes', 'sample_size_file', 'isActive'] },
                 { model: Fabric, attributes: ['id', 'fabricName', 'isActive'] },
                 { model: FabricFinish, attributes: ['id', 'fabricFinishName', 'isActive'] },
                 { model: Gsm, attributes: ['id', 'gsmValue', 'isActive'] },
-                { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
                 { model: Category, attributes: ['id', 'categoryName', 'isActive'] },
+                { model: KnitType, attributes: ['id', 'knitType', 'isActive'] },
                 { model: Color, attributes: ['id', 'colorName', 'isActive'] },
                 { model: Size, attributes: ['id', 'type_name', 'sizes', 'isActive'] },
                 { model: Decoration, attributes: ['id', 'decorationName', 'isActive'] },
@@ -79,13 +197,15 @@ exports.getAllStockOut = async (req, res) => {
                 { model: Sleeve, attributes: ['id', 'sleeveName', 'isActive'] },
                 { model: Length, attributes: ['id', 'lengthType', 'isActive'] },
                 { model: PackingMethod, attributes: ['id', 'packingType', 'isActive'] },
-                { model: InnerPcs, attributes: ['id', 'number_of_pcs', 'isActive'] },
-                { model: OuterCartonPcs, attributes: ['id', 'number_of_pcs', 'isActive'] },
+                { model: ProductTypes, attributes: ['id', 'product', 'isActive'] },
               ]
             }
           ]
         },
-        { model: PurchaseOrder, attributes: ['id', 'order_type', 'purchase_order_number', 'buyer', 'unique_name', 'purchase_quantity', 'delivery_date', 'stock_out_no_bundles', 'total_purchase_qty', 'created_at'] }
+        {
+          model: PurchaseOrder,
+          attributes: ['id', 'order_type', 'purchase_order_number', 'buyer_id', 'delivery_date', 'created_at']
+        }
       ]
     });
     res.status(200).json(stockOutData);
@@ -94,6 +214,7 @@ exports.getAllStockOut = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching the stock out data' });
   }
 };
+
 
 
 

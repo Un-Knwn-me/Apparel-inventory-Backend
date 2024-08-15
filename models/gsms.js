@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Gsm.associate = function(models) {
       Gsm.hasMany(models.Product, { foreignKey: 'gsm_id' });
+      Gsm.hasMany(models.PurchaseOrder, { foreignKey: 'gsm_id' });
     };
   
     return Gsm;

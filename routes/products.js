@@ -14,6 +14,9 @@ router.get('/getall', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.READ), 
 // Get product by id
 router.get('/:id', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.READ), productController.getProductById);
 
+// Get a product by its style number
+router.get('/get/:style_no', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.READ), productController.getProductByStyleNumber);
+
 // Update product by ID
 router.put('/:id', verifyPermission(DEPARTMENTS.PRODUCTS, PERMISSIONS.UPDATE), upload.array('images', 13), productController.updateProductById);
 
