@@ -34,6 +34,9 @@ router.get('/:userId', roleAdmin, userController.getUserPermissions);
 // Create a new department
 router.post('/newDepartment', roleAdmin, userController.createDepartment);
 
+// Get users by department
+router.get('/dept/:departmentId', roleAdmin, userController.getUsersByDepartment);
+
 // Get all departments
 router.get('/dept/getall', roleAdmin, userController.getDepartments);
 

@@ -8,6 +8,7 @@ exports.createStockEntry = async (req, res) => {
         stock_by_size,
         no_bundles,
         packing_type,
+        warehouse_id,
         total_pcs,
       } = req.body;
 
@@ -19,16 +20,38 @@ exports.createStockEntry = async (req, res) => {
       }
 
    // Check the stock entry
-    const existingStock = await Stock.findOne({ where: { product_style_number } });
+    const existingStock = await Stock.findOne({ where: { product_style_number, warehouse_id } });
 
     if (existingStock) {
-      return res.status(409).json({ error: 'Stock entry with this product style number already exists' });
-    }
+      // Check if the stock_by_size is the same
+      const isSameSize = JSON.stringify(existingStock.stock_by_size) === JSON.stringify(stock_by_size);
+
+      if (isSameSize) {
+          // If stock_by_size is the same, update the existing stock
+          existingStock.no_bundles += no_bundles;
+          existingStock.total_pcs += total_pcs;
+
+          await existingStock.save();
+
+          // Create stock history entry for the update
+          const stockHistory = await StockHistory.create({
+              stock_id: existingStock.id,
+              product_id: product.id,
+              stock_type: 'Stock In',
+              warehouse_id: warehouse_id,
+              stockOut_by_size: stock_by_size,
+              stockOut_bundle: no_bundles,
+              total_stockOut_pcs: total_pcs,
+          });
+          
+          return res.status(200).json({ message: 'Stock updated successfully', stock: existingStock, stockHistory });
+        }}
 
     // Create new stock entry
     const stock = await Stock.create({
       product_reference_number,
       stock_by_size,
+      warehouse_id,
       no_bundles,
       packing_type,
       total_pcs,
@@ -39,7 +62,8 @@ exports.createStockEntry = async (req, res) => {
       const stockHistory = await StockHistory.create({
         stock_id: stock.id,
         product_id: product.id,
-        stock_type: 'Stock In'
+        stock_type: 'Stock In',
+        warehouse_id: warehouse_id,
       });
 
       res.status(201).json({ stock, stockHistory });

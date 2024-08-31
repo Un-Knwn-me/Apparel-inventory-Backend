@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
 
   Department.associate = function(models) {
     Department.belongsToMany(models.User, { through: models.UserPermission, foreignKey: 'department_id' });
-    // Department.hasMany(models.UserPermission, { foreignKey: 'department_id' });
   };
 
   return Department;

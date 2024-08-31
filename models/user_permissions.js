@@ -15,12 +15,21 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
-    permission_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'Permissions',
-        key: 'id',
-      },
+    read: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    edit: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    delete: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    create: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -34,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
     indexes: [
       {
         unique: true,
-        fields: ['user_id', 'department_id', 'permission_id']
+        fields: ['user_id', 'department_id',]
       }
     ],
     tableName: 'UserPermissions',
@@ -43,7 +52,6 @@ module.exports = (sequelize, DataTypes) => {
 
   UserPermission.associate = function(models) {
     UserPermission.belongsTo(models.User, { foreignKey: 'user_id' });
-    UserPermission.belongsTo(models.Permission, { foreignKey: 'permission_id' });
     UserPermission.belongsTo(models.Department, { foreignKey: 'department_id' });
   };
 

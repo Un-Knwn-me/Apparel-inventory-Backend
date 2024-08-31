@@ -5,6 +5,13 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
       primaryKey: true,
     },
+    warehouse_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Warehouse',
+        key: 'id',
+      },
+    },
     product_style_number: {
       type: DataTypes.STRING,
     },
@@ -37,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Stock.associate = function(models) {
     Stock.belongsTo(models.Product, { foreignKey: 'product_id' });
+    Stock.belongsTo(models.Warehouse, { foreignKey: 'warehouse_id' });
     Stock.hasMany(models.StockHistory, { foreignKey: 'stock_id' });
 };
 

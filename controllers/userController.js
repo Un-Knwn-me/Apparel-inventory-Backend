@@ -88,16 +88,32 @@ exports.getAllUsers = async (req, res) => {
 };
 
 // Get a user by ID
+// Get user by ID with permissions
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
+    const user = await User.findByPk(req.params.id, {
+      include: [
+        {
+          model: UserPermission,
+          include: [
+            {
+              model: Department,
+              attributes: ['id', 'departmentName', 'isActive'],
+            }
+          ],
+          attributes: ['read', 'edit', 'delete', 'create'] 
+        }
+      ]
+    });
+
     if (user) {
       res.status(200).json(user);
     } else {
       res.status(404).json({ error: 'User not found' });
     }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the user' });
   }
 };
 
@@ -294,6 +310,45 @@ exports.createDepartment = async (req, res) => {
     res.status(201).json(department);
   } catch (error) {
     res.status(500).json({ error: 'An error occurred while creating the department' });
+  }
+};
+
+// get users by department
+exports.getUsersByDepartment = async (req, res) => {
+  try {
+    const { departmentId } = req.params;
+
+    // Fetch the department by ID to ensure it exists
+    const department = await Department.findByPk(departmentId);
+    if (!department) {
+      return res.status(404).json({ error: 'Department not found' });
+    }
+
+    // Fetch users with their permissions for the requested department
+    const users = await User.findAll({
+      include: [
+        {
+          model: Department,
+          where: { id: departmentId },
+          attributes: ['id', 'departmentName', 'isActive'],
+          through: { attributes: [] } // Exclude attributes from the join table
+        },
+        {
+          model: Permission,
+          attributes: ['id', 'permission'],
+          through: {
+            model: UserPermission,
+            where: { department_id: departmentId }, // Filter by the requested department's ID
+            attributes: [] // Exclude attributes from the join table
+          }
+        }
+      ]
+    });
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users by department:', error);
+    res.status(500).json({ error: 'An error occurred while fetching users by department' });
   }
 };
 

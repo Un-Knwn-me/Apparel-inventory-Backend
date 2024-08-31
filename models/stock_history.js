@@ -41,6 +41,13 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
+    warehouse_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Warehouse',
+        key: 'id',
+      },
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
@@ -52,6 +59,7 @@ module.exports = (sequelize, DataTypes) => {
 StockHistory.associate = function(models) {
   StockHistory.belongsTo(models.Stock, { foreignKey: 'stock_id' });
   StockHistory.belongsTo(models.Product, { foreignKey: 'product_id' });
+  StockHistory.belongsTo(models.Warehouse, { foreignKey: 'warehouse_id' });
   StockHistory.belongsTo(models.PurchaseOrder, { foreignKey: 'purchase_order_id' });
 };
 

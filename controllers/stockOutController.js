@@ -270,22 +270,8 @@ exports.getStockOutById = async (req, res) => {
 
 exports.updateStockOut = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { stock_id, product_reference_number, total_stockOut_bundle, purchase_order_id } = req.body;
-
-    // Fetch the existing stock history entry
-    const existingStockHistory = await StockHistory.findByPk(id);
-
-    if (!existingStockHistory) {
-      return res.status(404).json({ error: 'Stock history entry not found' });
-    }
-
-    // Fetch the product ID using the product reference number
-    const product = await Product.findOne({ where: { reference_number: product_reference_number } });
-
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
+    const { id } = req.params.id;
+    const { stock_id, updated_stockOut_bundle, updated_total_pcs, purchase_order_id } = req.body;
 
     // Fetch the stock entry
     const stock = await Stock.findByPk(stock_id);
@@ -294,38 +280,102 @@ exports.updateStockOut = async (req, res) => {
       return res.status(404).json({ error: 'Stock not found' });
     }
 
-    // Calculate the difference in stock out bundles
-    const bundleDifference = total_stockOut_bundle - existingStockHistory.total_stockOut_bundle;
+    // Fetch the existing stock out entry
+    const stockOutEntry = await StockHistory.findByPk(id);
 
-    // Check if the stock out quantity is available
-    if (stock.no_bundles < bundleDifference) {
-      return res.status(400).json({ error: 'Insufficient stock available' });
+    if (!stockOutEntry) {
+      return res.status(404).json({ error: 'Stock out entry not found' });
     }
+
+    // Calculate the difference in stock bundles and total pieces
+    const bundleDifference = updated_stockOut_bundle - stockOutEntry.total_stockOut_bundle;
+    const pcsDifference = updated_total_pcs - (stockOutEntry.total_stockOut_bundle * stock.total_inner_pcs);
+
+    // Check if the updated stock out quantity is available
+    if (stock.no_bundles < bundleDifference) {
+      return res.status(400).json({ error: 'Insufficient stock available for the update' });
+    }
+
+    // Update the stock quantities
+    stock.no_bundles -= bundleDifference;
+    stock.total_pcs += pcsDifference;
+    await stock.save();
 
     // Fetch the purchase order number using the purchase order ID
     const purchaseOrder = await PurchaseOrder.findByPk(purchase_order_id);
 
-    // Update the stock quantities
-    stock.no_bundles -= bundleDifference;
-    stock.total_pcs_in_bundle = stock.total_inner_pcs * stock.no_bundles;
-    await stock.save();
-
     // Update the stock history entry
-    existingStockHistory.stock_id = stock.id;
-    existingStockHistory.product_id = product.id;
-    existingStockHistory.total_stockOut_bundle = total_stockOut_bundle;
-    existingStockHistory.stock_type = 'Stock Out';
-    existingStockHistory.purchase_order_number = purchaseOrder.purchase_order_number;
-    existingStockHistory.purchase_order_id = purchase_order_id;
+    stockOutEntry.total_stockOut_bundle = updated_stockOut_bundle;
+    stockOutEntry.total_stockOut_pcs = updated_total_pcs;
+    await stockOutEntry.save();
 
-    await existingStockHistory.save();
-
-    res.status(200).json({ message: 'Stock out updated successfully', stock, stockHistory: existingStockHistory });
+    res.status(200).json({ message: 'Stock out updated successfully', stock, stockOutEntry });
   } catch (error) {
     console.error('Error updating stock out:', error);
     res.status(500).json({ error: 'An error occurred while updating the stock out' });
   }
 };
+
+exports.updateStockOut = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { stock_id, updated_stockOut_bundle, updated_total_pcs } = req.body;
+
+    // Fetch the stock entry
+    const stock = await Stock.findByPk(stock_id);
+
+    if (!stock) {
+      return res.status(404).json({ error: 'Stock not found' });
+    }
+
+    // Fetch the existing stock out entry
+    const stockOutEntry = await StockHistory.findByPk(id);
+
+    if (!stockOutEntry) {
+      return res.status(404).json({ error: 'Stock out entry not found' });
+    }
+
+    // Calculate the differences
+    const bundleDifference = updated_stockOut_bundle - stockOutEntry.total_stockOut_bundle;
+    const pcsDifference = updated_total_pcs - stockOutEntry.total_stockOut_pcs;
+
+    // Adjust stock based on the differences
+    if (bundleDifference > 0) {
+      // If the updated bundle is greater, subtract the difference from the stock
+      if (stock.no_bundles < bundleDifference) {
+        return res.status(400).json({ error: 'Insufficient stock bundles available' });
+      }
+      stock.no_bundles -= bundleDifference;
+    } else {
+      // If the updated bundle is lesser, add the difference back to the stock
+      stock.no_bundles -= bundleDifference;
+    }
+
+    if (pcsDifference > 0) {
+      // If the updated pcs is greater, subtract the difference from the stock
+      if (stock.total_pcs < pcsDifference) {
+        return res.status(400).json({ error: 'Insufficient stock pieces available' });
+      }
+      stock.total_pcs -= pcsDifference;
+    } else {
+      // If the updated pcs is lesser, add the difference back to the stock
+      stock.total_pcs -= pcsDifference; 
+    }
+
+    await stock.save();
+
+    // Update the stock history entry
+    stockOutEntry.total_stockOut_bundle = updated_stockOut_bundle;
+    stockOutEntry.total_stockOut_pcs = updated_total_pcs;
+    await stockOutEntry.save();
+
+    res.status(200).json({ message: 'Stock out updated successfully', stock, stockOutEntry });
+  } catch (error) {
+    console.error('Error updating stock out:', error);
+    res.status(500).json({ error: 'An error occurred while updating the stock out' });
+  }
+};
+
 
 
 exports.deleteStockOutById = async (req, res) => {

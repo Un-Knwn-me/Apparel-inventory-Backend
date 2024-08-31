@@ -38,9 +38,8 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.associate = function(models) {
-    // User.hasMany(models.UserPermission, { foreignKey: 'user_id' });
-    User.belongsToMany(models.Permission, { through: models.UserPermission, foreignKey: 'user_id' });
-    User.belongsToMany(models.Department, { through: models.UserPermission, foreignKey: 'user_id' });
+    User.hasMany(models.UserPermission, { foreignKey: 'user_id' });
+    User.hasMany(models.Notification, { foreignKey: 'user_id' });
   };
 
   return User;
